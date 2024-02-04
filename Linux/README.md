@@ -58,3 +58,13 @@ $ sudo apt install FONT
 ```
 
 
+## Добявляем в BASH подсказку по активной ветке GIT
+
+```bash
+parse_git_branch() {
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+
+PS1='\[\e]0;\u@\h: \w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[36m\]$(parse_git_branch)\[\e[0m\]\n$ '
+
+```
