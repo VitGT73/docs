@@ -5,7 +5,7 @@
 | Action |** Java **| **Python** | **JS / TS** |
 |--------|----------|------------|-------------|
 |***Приведение к типу***|
-| строки к целому |  | `number = int(text)`|`number = parseInt(text, 10)`|
+| - строки к целому: |  | `number = int(text)`|`number = parseInt(text, 10)`|
 
 
 | header 1 | header 2 | header 3 |
