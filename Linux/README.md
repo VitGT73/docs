@@ -57,14 +57,35 @@ $ sudo apt search FONT
 $ sudo apt install FONT
 ```
 
-
 ## Добявляем в BASH подсказку по активной ветке GIT
 
+Откройте файл конфигурации вашей оболочки, например:
 ```bash
+nano ~/.bashrc
+```
+
+Добавьте следующий код в конец файла:
+
+```bash
+# add git-branch info to bash's command prompt
+
 parse_git_branch() {
     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
 PS1='\[\e]0;\u@\h: \w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[36m\]$(parse_git_branch)\[\e[0m\]\n$ '
 
+```
+# Add Python virtual environment info to PS1
+```bash
+if [ -n "$VIRTUAL_ENV" ]; then
+    PS1+="($(basename "$VIRTUAL_ENV")) "
+fi
+```
+
+
+
+Чтобы изменения вступили в силу, выполните следующую команду:
+```
+source ~/.bashrc
 ```
