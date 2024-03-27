@@ -193,13 +193,263 @@ text = ', '.join(items)  # 'A, B, C'
 items = ['A', 'B', 'C'];
 text = items.join(', ');  // 'A, B, C'
 ```
-Переменные в строках
+
+### JSON
+
+При работе со многими API удобно сериализовать объекты в JSON-объекты для удобства передачи и последующего разбора.
+
+
+В Питоне есть стандартный модуль json:
+
+
+```Python
+import json
+json_data = json.dumps(dictionary, indent=4)
+dictionary = json.loads(json_data)
+```
+
+Здесь мы форматируем JSON с помощью отступов в 4 пробела.
+
+
+В JS существует объект JSON с методами для создания и парсинга JSON-строк:
+
+
+```js
+json_data = JSON.stringify(dictionary, null, 4);
+dictionary = JSON.parse(json_data);
+```
+
+### Разбираем строки регулярками
+
+В прошлой статье мы соединяли несколько строк в одну. Но как разделить одну длинную строку на несколько, особенно если разделителем выступает не один символ типа запятой, а целый диапазон различных вариантов? Здесь нам на помощь приходят регулярные выражения и метод `split()`.
+
+
+В Питоне метод `split()` относится к шаблону регулярных выражений. Вот как можно разделить текстовую строку на предложения по знакам препинания:
+
+
+import re
+
+```Python
+# Один или более символов "!?." за которыми следует ноль или более пробельных символов
+delimiter = re.compile(r'[!?\.]+\s*')
+
+text = "Hello!!! What's new? Follow me."
+sentences = delimiter.split(text)
+# sentences == ['Hello', "What's new", 'Follow me', '']
+```
+
+В JS метод ``split()`` относится к строкам:
+
+
+```js
+// Один или более символов "!?." за которыми следует ноль или более пробельных символов
+delimiter = /[!?\.]+\s*/;
+
+text = "Hello!!! What's new? Follow me.";
+sentences = text.split(delimiter)
+// sentences === ["Hello", "What's new", "Follow me", ""]
+```
+
+### Поиск регулярками по шаблону
+
+Регулярные выражения часто используются для валидации данных из форм.
+К примеру, для проверки корректности веденного e-mail адреса его надо сопоставить с шаблоном регулярного выражения.
+
+
+В Питоне это будет выглядеть примерно так:
+
+```Python
+import re
+
+# name, "@", and domain
+pattern = re.compile(r'([\w.+\-]+)@([\w\-]+\.[\w\-.]+)')
+
+match = pattern.match('hi@example.com')
+# match.group(0) == 'hi@example.com'
+# match.group(1) == 'hi'
+# match.group(2) == 'example.com'
+```
+
+Если участок текста совпадает с шаблоном, то при помощи метода `group()` возвращается совпавший участок целиком в котором можно выделить отдельные группы определенные в шаблоне.
+
+
+0 — совпавшая (под)строка целиком, 1 — первая группа, 2 — вторая и т.д.
+
+
+Если совпадений не найдено, вернется объект типа `None`.
+
+
+В JS существует строковый метод `match()`, который возвращает либо совпавший участок строки либо `null`.
+
+
+```js
+// name, "@", and domain
+pattern = /([\w.+\-]+)@([\w\-]+\.[\w\-.]+)/;
+
+match = 'hi@example.com'.match(pattern);
+// match[0] === 'hi@example.com'
+// match[1] === 'hi'
+// match[2] === 'example.com'
+```
+
+В JS совпавший объект выглядит как массив. Элемент с индексом [0] — совпавшая (под)строка целиком, 1-й элемент — первая группа, 2-й — вторая и т.д. — все в соответствии с группами определенными в шаблоне.
+
+
+Иногда кроме поиска требуется определить положение образца в тексте. Это можно сделать с помощью метода `search()`.
+В Питоне этот метод относится к регулярным выражениям и возвращает совпавший объект. У этого совпавшего объекта есть метод `start()`, возвращающий начало вхождения этой подстроки в основную строку:
+
+
+```Python
+text = 'Say hi at hi@example.com'
+first_match = pattern.search(text)
+if first_match:
+    start = first_match.start()  # start == 10
+```
+
+В JS метод есть строковый метод `search()` возвращающий индекс начала подстроки. Или -1 если совпадений не было найдено.
+
+
+
+```js
+text = 'Say hi at hi@example.com';
+first_match = text.search(pattern);
+if (first_match > -1) {
+    start = first_match;  // start === 10
+}
+```
+
+### Замена по шаблону с помощью регулярных выражений
+
+Обычно замена по шаблону нужна когда требуется очистить данные или добавить какие-нибудь свойства в текст. К примеру, мы можем взять строку и все встречающиеся email-адреса сделать ссылками:
+
+
+В Питоне для этого есть метод шаблона регулярных выражений `sub()`:
+
+
+
+```Python
+html = pattern.sub(
+    r'<a href="mailto:\g<0>">\g<0></a>',
+    'Say hi at hi@example.com',
+)
+# html == 'Say hi at <a href="mailto:hi@example.com">hi@example.com</a>'
+```
+
+Разработчики на JS могут использовать строковый метод `replace()`:
+
+
+```js
+html = 'Say hi at hi@example.com'.replace(
+    pattern,
+    '<a href="mailto:$&">$&</a>',
+);
+// html === 'Say hi at <a href="mailto:hi@example.com">hi@example.com</a>'
+```
+
+В Питоне совпавшие группы доступны как `\g<0>, \g<1>, \g<2>` и т.д.
+В JS аналогично `$&, $1, $2` и т.д.
+
+
+Также возможно заменить совпавший участок при помощи функции. Такие функции бывают полезны при замене оборачивании исходного текста или для подсчета, сбора или получения другой информации о тексте. К примеру, использую при замене вызов функции можно написать подсветку синтаксиса HTML.
+
+
+Давайте изменим все встречающиеся e-mail адреса ПРОПИСНЫМИ БУКВАМИ.
+
+
+В Питоне функция замены получает совпавший объект. Мы используем метод group() чтобы произвести действия с совпавшим текстом и вернуть его в виде замены:
+
+
+```Python
+text = pattern.sub(
+    lambda match: match.group(0).upper(),
+    'Say hi at hi@example.com',
+)
+# text == 'Say hi at HI@EXAMPLE.COM'
+```
+
+В JS функция замены получает совпавшую строку целиком, первое вхождение, второе и т.д. Мы производим необходимые действия и возвращаем измененную строку:
+
+
+```js
+text = 'Say hi at hi@example.com'.replace(
+    pattern,
+    function(match, p1, p2) {
+        return match.toUpperCase();
+    }
+);
+// text === 'Say hi at HI@EXAMPLE.COM'
+```
+
+### Обработка ошибок
+
+В противоположность Питону фронтенд-браузерный JavaScript обычно не используют для записи-чтения файлов или доступа к базам данных. Поэтому блоки `try..catch` довольно редко встречаются в JS по сравнению с блоками `try..except` в Питоне.
+
+
+Но, в любом случае, обработка ошибок может быть произведена в пользовательском скрипте, вызвана из библиотечной функции и перехвачена в основном коде.
+
+
+В следующем примере на Питоне мы определим свое исключение `MyException`, порождаем его в функции, и посмотрим как его перехватить и обработать в блоке `try..except..finally`:
+
+
+```Python
+class MyException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+def proceed():
+    raise MyException('Error happened!')
+
+try:
+    proceed()
+except MyException as err:
+    print('Sorry! {}'.format(err))
+finally:
+    print('Finishing')
+```
+
+Следующий код на JS делает то же самое — мы определяем класс `MyException`, порождаем его в функции, перехватываем и обрабатываем в блоке `try..catch..finally`:
+
+
+```js
+function MyException(message) {
+   this.message = message;
+   this.toString = function() {
+       return this.message;
+   }
+}
+
+function proceed() {
+    throw new MyException('Error happened!');
+}
+
+try {
+    proceed();
+} catch (err) {
+    if (err instanceof MyException) {
+        console.log('Sorry! ' + err);
+    }
+} finally {
+    console.log('Finishing');
+}
+```
+В обоих языках класс `MyException` имеет параметр message и метод для строкового представления в зависимости от значения `message`.
+
+
+Конечно, исключения должны вызваться/порождаться только в случае ошибки. И если вы определили эту ошибку в своем модуле.
+
+
+### Переменные в строках
 
 Традиционный способ построения строк с переменными использует конкатенацию строк и переменных:
 
 
+```Python
 name = 'World'
 value = 'Hello, ' + name + '!\nWelcome!'
+```
 
 Такая запись может показаться разбросанной и плохочитаемой, также часто можно ошибиться в пробелах окружающих слова в строках.
 
@@ -210,118 +460,121 @@ value = 'Hello, ' + name + '!\nWelcome!'
 В Питоне f-строки помечаются символом f перед кавычками:
 
 
+```Python
 name = 'World'
 value = f"""Hello, {name}!
 Welcome!"""
 
 price = 14.9
 value = f'Price: {price:.2f} €'  # 'Price: 14.90 €'
+```
 
 В JS строковые шаблоны начинаются и кончаются обратной кавычкой (backtrick) `
 
-
+```js
 name = 'World';
 value = `Hello, ${name}!
 Welcome!`;
 
 price = 14.9;
 value = `Price ${price.toFixed(2)} €`;  // 'Price: 14.90 €'
-
+```
 Заметим, что шаблоны могут быть как одно- итак и многострочными.
 В Питоне можно задать форматирование переменных.
 
 
-Распаковка списков
+### Распаковка списков
 
 В Питоне, а теперь уже и в JS существует интересная возможность присвоить элементы последовательности различным переменным. К примеру, мы можем присвоить трем переменным три значения из списка:
 
-
+```Python
 [a, b, c] = [1, 2, 3]
-
+```
 Для кортежей скобки могут быть опущены.
 Следующий пример очень популярен в Питоне как способ обмена значений двух переменных:
 
-
+```Python
 a = 1
 b = 2
 a, b = b, a   # поменяли значения
-
+```
 В JS6+ также возможно:
 
-
+```js
 a = 1;
 b = 2;
 [a, b] = [b, a];  // поменяли значения
-
+```
 В Питоне, в случае если у нас есть неопределенное количество элементов в списке или кортеже, мы можем присвоить эти элементы кортежу из переменных в котором последние несколько значений вернуться как список:
 
-
+```Python
 first, second, *the_rest = [1, 2, 3, 4]
 # first == 1
 # second == 2
 # the_rest == [3, 4]
-
+```
 Такое же можно сделать и в JS (ECMAScrip6):
 
-
+```js
 [first, second, ...the_rest] = [1, 2, 3, 4];
 // first === 1
 // last === 2
 // the_rest === [3, 4]
-
-Лямбда-функции
+```
+### Лямбда-функции
 
 И Питон и JS имеют довольно ясную функциональность для создания однострочных функций. Такие функции называются лямбда-функциями. Лямбды это такие функции которые принимают один или более аргументов и возвращают вычисленное значение. Обычно лямбда-функции используются когда нужно передать одну функцию в другую функцию в качестве колбека или в случае когда необходимо обработать каждый элемент последовательности.
 
 
-В Питоне можно определить лямбда-функцию используя ключевое слово lambda:
+В Питоне можно определить лямбда-функцию используя ключевое слово `lambda`:
 
-
+```Python
 sum = lambda x, y: x + y
 square = lambda x: x ** 2
-
+```
 В JS используется => нотация. Если аргументов больше одного, они помещаются в скобки:
 
-
+```js
 sum = (x, y) => x + y;
 square = x => Math.pow(x, 2);
-
-Итерация без индексов
+```
+### Итерация без индексов
 
 Многие ЯП позволяют обходить массивы только используя доступ к определенному элементу по номеру индекса и циклу с инкрементом этого индекса.
 
-
+```js
 for (i=0; i<items.length; i++) {
     console.log(items[i]);
 }
-
+```
 Это не слишком красивая запись, и немного сложная для новичков — такая запись не выглядит естественно. В Питоне есть красивый лаконичный способ обхода списка:
 
-
+```Python
 for item in ['A', 'B', 'C']:
     print(item)
-
+```
 В современном JS такое реализуется при помощи оператора for..of:
 
-
+```js
 for (let item of ['A', 'B', 'C']) {
     console.log(item);
 }
-
+```
 Также можно обойти строку посимвольно в Питоне:
 
-
+```Python
 for character in 'ABC':
     print(character)
+```
 
 И в современном JavaScript:
 
-
+```js
 for (let character of 'ABC') {
     console.log(character);
 }
-
-Генераторы
+```
+### Генераторы
 
 И Питон и современный JS позволяют определить специальные функции которые будут выглядеть как итераторы. При каждом вызове (итерации) они будут возвращать следующее сгенерированное значение из последовательности. Такие функции называются генераторы.
 
@@ -334,7 +587,7 @@ for (let character of 'ABC') {
 
 Рассмотрим пример на Питоне в котором создается генератор countdown() который возвращает числа от заданного числа до 1 в обратном порядке (10,9,8,...,1):
 
-
+```Python
 def countdown(counter):
     while counter > 0:
         yield counter
@@ -342,10 +595,10 @@ def countdown(counter):
 
 for counter in countdown(10):
     print(counter)
-
+```
 То же самое можно получить в современном JS, но обратите внимание на * в описании функции. Это определяет ее как генератор:
 
-
+```js
 function* countdown(counter) {
     while (counter > 0) {
         yield counter;
@@ -355,15 +608,15 @@ function* countdown(counter) {
 for (let counter of countdown(10)) {
     console.log(counter);
 }
-
-Множества (Sets)
+```
+### Множества (Sets)
 
 Мы уже познакомились со списками (lists), кортежами (tuples), массивами (arrays). Но есть еще один тип данных — множества (sets). Множества это массивы данных в котором каждый уникальный элемент присутствует только в единственном экземпляре. Теория множеств определяет с множествами такие операции как объединение(union), пересечение(intersection), и разность(difference), но мы не будем сейчас их рассматривать.
 
 
 Создаем множество, добавляем в него элемент, проверяем существование элемента, получаем общее количество элементов, обходим множество по элементам и удаляем один элемент используя Питон:
 
-
+```Python
 s = set(['A'])
 s.add('B'); s.add('C')
 'A' in s
@@ -371,10 +624,10 @@ len(s) == 3
 for elem in s:
     print(elem)
 s.remove('C')
-
+```
 То же самое на JS:
 
-
+```js
 s = new Set(['A']);
 s.add('B').add('C');
 s.has('A') === true;
@@ -383,18 +636,237 @@ for (let elem of s.values()) {
     console.log(elem);
 }
 s.delete('C')
+```
 
-Подытожим
+### Аргументы функций
+
+У Питона обширный инструментарий для работы с аргументами функций — есть значения по умолчанию, переменное число позиционных и именованных аргументов (`*args` и `**kwargs`).
 
 
+Когда вы передаете значение в функцию, вы можете указать имя аргумента которому это значение будет передано. В JS тоже существует такая возможность.
 
 
+Значения по умолчанию для аргументов функций могут быть определены в Питоне:
 
+```Python
+from pprint import pprint
 
-Подытожим
+def report(post_id, reason='not-relevant'):
+    pprint({'post_id': post_id, 'reason': reason})
+
+report(42)
+report(post_id=24, reason='spam')
+```
+В JS аналогично:
+
+```js
+function report(post_id, reason='not-relevant') {
+    console.log({post_id: post_id, reason: reason});
+}
+
+report(42);
+report(post_id=24, reason='spam');
+```
+Позиционные аргументы в Питоне могут быть обработаны используя оператор `*`:
+
+```Python
+from pprint import pprint
+
+def add_tags(post_id, *tags):
+    pprint({'post_id': post_id, 'tags': tags})
+
+add_tags(42, 'python', 'javascript', 'django')
+```
+В JS обработка позиционных аргументов происходит при помощи оператора ...:
+
+```js
+function add_tags(post_id, ...tags) {
+    console.log({post_id: post_id, tags: tags});
+}
+
+add_tags(42, 'python', 'javascript', 'django');
+```
+Именованные аргументы часто применяются в Питоне когда необходимо передавать изменяемое число аргументов:
+
+```Python
+from pprint import pprint
+
+def create_post(**options):
+    pprint(options)
+
+create_post(
+    title='Hello, World!',
+    content='This is our first post.',
+    is_published=True,
+)
+create_post(
+    title='Hello again!',
+    content='This is our second post.',
+)
+```
+Передача множества именованных аргументов в JS реализуется с помощью словаря (`options` в данном примере):
+
+```js
+function create_post(options) {
+    console.log(options);
+}
+
+create_post({
+    'title': 'Hello, World!',
+    'content': 'This is our first post.',
+    'is_published': true
+});
+create_post({
+    'title': 'Hello again!',
+    'content': 'This is our second post.'
+});
+```
+### Классы и наследование
+
+Питон — объектно-ориентированный язык. JS начиная с ECMAScript 6 также позволяет писать объектно-ориентированный код без всяких уловок и синтаксических оборотов.
+
+Питон. Создаем класс, конструктор и метод для текстового представления объекта:
+
+```Python
+class Post(object):
+    def __init__(self, id, title):
+        self.id = id
+        self.title = title
+
+    def __str__(self):
+        return self.title
+
+post = Post(42, 'Hello, World!')
+isinstance(post, Post) == True
+print(post)  # Hello, World!
+```
+Аналогичные действия на JS:
+
+```js
+class Post {
+    constructor (id, title) {
+        this.id = id;
+        this.title = title;
+    }
+    toString() {
+        return this.title;
+    }
+}
+
+post = new Post(42, 'Hello, World!');
+post instanceof Post === true;
+console.log(post.toString());  // Hello, World!
+```
+Создадим два класса `Article` и `Link` в Питоне, которые будут наследоваться от класса `Post`. Можно заметить, что мы используем функцию `super` для доступа к методам базового класса `Post`:
+
+```Python
+class Article(Post):
+    def __init__(self, id, title, content):
+        super(Article, self).__init__(id, title)
+        self.content = content
+
+class Link(Post):
+    def __init__(self, id, title, url):
+        super(Link, self).__init__(id, title)
+        self.url = url
+
+    def __str__(self):
+        return '{} ({})'.format(
+            super(Link, self).__str__(),
+            self.url,
+        )
+
+article = Article(1, 'Hello, World!', 'This is my first article.')
+link = Link(2, 'DjangoTricks', 'https://djangotricks.blogspot.com')
+isinstance(article, Post) == True
+isinstance(link, Post) == True
+print(link)
+# DjangoTricks (https://djangotricks.blogspot.com)
+```
+То же самое в JS:
+
+```js
+class Article extends Post {
+    constructor (id, title, content) {
+        super(id, title);
+        this.content = content;
+    }
+}
+
+class Link extends Post {
+    constructor (id, title, url) {
+        super(id, title);
+        this.url = url;
+    }
+    toString() {
+        return super.toString() + ' (' + this.url + ')';
+    }
+}
+
+article = new Article(1, 'Hello, World!', 'This is my first article.');
+link = new Link(2, 'DjangoTricks', 'https://djangotricks.blogspot.com');
+article instanceof Post === true;
+link instanceof Post === true;
+console.log(link.toString());
+// DjangoTricks (https://djangotricks.blogspot.com)
+```
+### Свойства класса: геттеры и сеттеры.
+
+В объектно-ориентированном программировании у классов есть атрибуты, методы и свойства. Свойства — это смесь атрибутов и методов. Вы можете обращаться со свойствами как с атрибутами, но где-то внутри они вызывают специальные методы называемые геттерами и сеттерами (getters/setters) для специфической обработки данных.
+В данном примере на Питоне показан базовый способ описания геттера и сеттера для свойства `slug` с помощью декораторов:
+
+```Python
+class Post(object):
+    def __init__(self, id, title):
+        self.id = id
+        self.title = title
+        self._slug = ''
+
+    @property
+    def slug(self):
+        return self._slug
+
+    @slug.setter
+    def slug(self, value):
+        self._slug = value
+
+post = Post(1, 'Hello, World!')
+post.slug = 'hello-world'
+print(post.slug)
+```
+В JS геттер и сеттер для свойства slug могут быть описаны как:
+
+```js
+class Post {
+    constructor (id, title) {
+        this.id = id;
+        this.title = title;
+        this._slug = '';
+    }
+
+    set slug(value) {
+        this._slug = value;
+    }
+
+    get slug() {
+        return this._slug;
+    }
+}
+
+post = new Post(1, 'Hello, World!');
+post.slug = 'hello-world';
+console.log(post.slug);
+```
+## Выводы
 
 * Списки (lists) и кортежи (tuples) в Python соответствуют массивам (arrays) в Javascript.
 * Словари (dictionaries) в Python соответствуют объектам (objects) в Javascript.
+
+* Сериализация в/из JSON достаточно прямолинейна — что в Питоне что в JS.
+* Регулярки — мощный инструмент обработки текстов в обоих языках.
+* Можно производить замены с помощью функций.
+* Для более сложных случаев можно использовать вызов, перехват и обработку ошибок.
+
 * Строки в Питоне похожи на строки в Javascript.
 * Приводить строку к числу в Javascript нужно с осторожностью, помня о системах счисления.
 * Однострочные условные выражения существуют в обоих языках.
@@ -405,6 +877,11 @@ s.delete('C')
 * Используя генераторы можно получить последовательности с практически неограниченным числом элементов.
 * Использование множеств упрощает проверку уникальности элемента в массиве.
 * Используйте лямбды когда вам нужны небольшие однострочные функции.
+
+* В обоих языках можно описать дефолтные значения у аргументов функций.
+* В обоих языках можно передавать в функцию произвольное число именованных или позиционных аргументов.
+* Оба языка поддерживают объектно-ориентированную парадигму программирования.
+
 
 Используемые материалы:
 [Первая часть](https://habr.com/post/416617/) — приведение к типу, тернарный оператор, доступ к свойству по имени свойства, словари, списки, строки, конкатенация строк.
