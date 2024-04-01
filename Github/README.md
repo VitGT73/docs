@@ -38,7 +38,6 @@ git branch -m master main
 git push -u origin main
 ```
 
-
 Клонируем этот репозиторий на локальную машину
 ```bash
 git clone git@github.com:VitGT73/VitGT73.git
